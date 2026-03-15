@@ -12,7 +12,7 @@ interface SettingsState {
 export const useSettingsStore = create<SettingsState>()(
   persist(
     (set) => ({
-      finnhubApiKey: "",
+      finnhubApiKey: "cnb2b31r01qks5iut2v0cnb2b31r01qks5iut2vg",
       currency: "EUR",
       setFinnhubApiKey: (finnhubApiKey) => set({ finnhubApiKey }),
       setCurrency: (currency) => set({ currency }),

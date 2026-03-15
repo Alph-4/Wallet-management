@@ -46,7 +46,8 @@ export const calculateRebalance = (assets: Asset[], categories: Category[]): Reb
     const targetValue = (category.targetPercent / 100) * totalValue;
     const delta = targetValue - currentValue;
 
-    const action = delta > 0.01 ? "BUY" : delta < -0.01 ? "SELL" : "HOLD";
+    const action: "BUY" | "SELL" | "HOLD" =
+      delta > 0.01 ? "BUY" : delta < -0.01 ? "SELL" : "HOLD";
 
     return {
       categoryId: category.id,
