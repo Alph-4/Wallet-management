@@ -5,6 +5,15 @@ import tailwindcss from "@tailwindcss/vite";
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  server: {
+    proxy: {
+      "/api/yahoo": {
+        target: "https://query1.finance.yahoo.com",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/yahoo/, ""),
+      },
+    },
+  },
   test: {
     globals: true,
     environment: "jsdom",

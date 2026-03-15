@@ -10,6 +10,7 @@ interface TemplateState {
   deleteTemplate: (templateId: string) => void;
   setActiveTemplate: (templateId: string) => void;
   getActiveTemplate: () => Template | null;
+  getTemplateById: (templateId?: string) => Template | null;
 }
 
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -76,6 +77,13 @@ export const useTemplateStore = create<TemplateState>()(
         const state = get();
         const active = state.templates.find((template) => template.id === state.activeTemplateId);
         return active ?? null;
+      },
+      getTemplateById: (templateId) => {
+        if (!templateId) {
+          return null;
+        }
+        const state = get();
+        return state.templates.find((template) => template.id === templateId) ?? null;
       },
     }),
     {

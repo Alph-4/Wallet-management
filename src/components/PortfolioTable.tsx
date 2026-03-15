@@ -1,5 +1,8 @@
-import { RefreshCcw, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { Pencil, RefreshCcw, Trash2 } from "lucide-react";
 import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Select } from "./ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
 import type { Asset, Category, Currency } from "../types";
 import { resolveAssetPrice } from "../lib/rebalance";
@@ -11,6 +14,7 @@ interface PortfolioTableProps {
   onRefreshAsset: (asset: Asset) => Promise<void>;
   onRefreshAll: () => Promise<void>;
   onDeleteAsset: (assetId: string) => void;
+  onUpdateAsset: (assetId: string, patch: Partial<Omit<Asset, "id" | "createdAt">>) => void;
   isRefreshing: boolean;
 }
 
@@ -24,9 +28,54 @@ export function PortfolioTable({
   onRefreshAsset,
   onRefreshAll,
   onDeleteAsset,
+  onUpdateAsset,
   isRefreshing,
 }: PortfolioTableProps) {
+  const [editingAssetId, setEditingAssetId] = useState<string | null>(null);
+  const [draft, setDraft] = useState<{
+    name: string;
+    categoryId: string;
+    ticker: string;
+    quantity: number;
+    manualPrice: number;
+  } | null>(null);
+
   const categoryMap = new Map(categories.map((category) => [category.id, category.name]));
+
+  const startEdit = (asset: Asset) => {
+    setEditingAssetId(asset.id);
+    setDraft({
+      name: asset.name,
+      categoryId: asset.categoryId,
+      ticker: asset.ticker ?? "",
+      quantity: asset.quantity,
+      manualPrice: asset.manualPrice,
+    });
+  };
+
+  const cancelEdit = () => {
+    setEditingAssetId(null);
+    setDraft(null);
+  };
+
+  const saveEdit = (assetId: string) => {
+    if (!draft) {
+      return;
+    }
+
+    if (!draft.name.trim() || draft.quantity <= 0 || draft.manualPrice < 0) {
+      return;
+    }
+
+    onUpdateAsset(assetId, {
+      name: draft.name.trim(),
+      categoryId: draft.categoryId,
+      ticker: draft.ticker.trim() || undefined,
+      quantity: draft.quantity,
+      manualPrice: draft.manualPrice,
+    });
+    cancelEdit();
+  };
 
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm">
@@ -52,32 +101,119 @@ export function PortfolioTable({
         </TableHeader>
         <TableBody>
           {assets.map((asset) => {
+            const isEditing = editingAssetId === asset.id && draft !== null;
             const price = resolveAssetPrice(asset);
             const value = price * asset.quantity;
             return (
               <TableRow key={asset.id}>
-                <TableCell className="font-medium">{asset.name}</TableCell>
-                <TableCell>{categoryMap.get(asset.categoryId) ?? "Unknown"}</TableCell>
-                <TableCell>{asset.ticker ?? "-"}</TableCell>
-                <TableCell>{asset.quantity.toFixed(4)}</TableCell>
-                <TableCell>{formatMoney(price, currency)}</TableCell>
+                <TableCell className="font-medium">
+                  {isEditing ? (
+                    <Input
+                      value={draft.name}
+                      onChange={(event) =>
+                        setDraft((prev) => (prev ? { ...prev, name: event.target.value } : prev))
+                      }
+                    />
+                  ) : (
+                    asset.name
+                  )}
+                </TableCell>
+                <TableCell>
+                  {isEditing ? (
+                    <Select
+                      value={draft.categoryId}
+                      onChange={(event) =>
+                        setDraft((prev) => (prev ? { ...prev, categoryId: event.target.value } : prev))
+                      }
+                    >
+                      {categories.map((category) => (
+                        <option key={category.id} value={category.id}>
+                          {category.name}
+                        </option>
+                      ))}
+                    </Select>
+                  ) : (
+                    categoryMap.get(asset.categoryId) ?? "Unknown"
+                  )}
+                </TableCell>
+                <TableCell>
+                  {isEditing ? (
+                    <Input
+                      value={draft.ticker}
+                      onChange={(event) =>
+                        setDraft((prev) => (prev ? { ...prev, ticker: event.target.value.toUpperCase() } : prev))
+                      }
+                    />
+                  ) : (
+                    asset.ticker ?? "-"
+                  )}
+                </TableCell>
+                <TableCell>
+                  {isEditing ? (
+                    <Input
+                      type="number"
+                      min={0}
+                      step={0.0001}
+                      value={draft.quantity}
+                      onChange={(event) =>
+                        setDraft((prev) => (prev ? { ...prev, quantity: Number(event.target.value) } : prev))
+                      }
+                    />
+                  ) : (
+                    asset.quantity.toFixed(4)
+                  )}
+                </TableCell>
+                <TableCell>
+                  {isEditing ? (
+                    <Input
+                      type="number"
+                      min={0}
+                      step={0.0001}
+                      value={draft.manualPrice}
+                      onChange={(event) =>
+                        setDraft((prev) => (prev ? { ...prev, manualPrice: Number(event.target.value) } : prev))
+                      }
+                    />
+                  ) : (
+                    formatMoney(price, currency)
+                  )}
+                </TableCell>
                 <TableCell>{formatMoney(value, currency)}</TableCell>
                 <TableCell>
                   {asset.lastUpdatedAt ? new Date(asset.lastUpdatedAt).toLocaleString() : "Never"}
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      disabled={!asset.ticker || isRefreshing}
-                      onClick={() => onRefreshAsset(asset)}
-                    >
-                      <RefreshCcw className="h-4 w-4" />
-                    </Button>
-                    <Button size="sm" variant="destructive" onClick={() => onDeleteAsset(asset.id)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    {isEditing ? (
+                      <>
+                        <Button size="sm" onClick={() => saveEdit(asset.id)}>
+                          Save
+                        </Button>
+                        <Button size="sm" variant="secondary" onClick={cancelEdit}>
+                          Cancel
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Button size="sm" variant="secondary" onClick={() => startEdit(asset)}>
+                          <Pencil className="mr-1 h-4 w-4" />
+                          Edit
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          disabled={!asset.ticker || isRefreshing}
+                          onClick={() => onRefreshAsset(asset)}
+                        >
+                          <RefreshCcw className="mr-1 h-4 w-4" />
+                          Refresh
+                        </Button>
+                        <Button size="sm" variant="destructive" onClick={() => onDeleteAsset(asset.id)}>
+                          <Trash2 className="mr-1 h-4 w-4" />
+                          Delete
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </TableCell>
               </TableRow>

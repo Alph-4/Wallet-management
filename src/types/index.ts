@@ -15,8 +15,17 @@ export interface Template {
   updatedAt: string;
 }
 
+export interface Wallet {
+  id: string;
+  name: string;
+  templateId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Asset {
   id: string;
+  walletId?: string;
   name: string;
   categoryId: string;
   ticker?: string;
