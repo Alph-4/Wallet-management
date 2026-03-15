@@ -72,14 +72,17 @@ export const calculateRebalance = (assets: Asset[], categories: Category[]): Reb
     const currentCategoryValue = categoryCurrentValue.get(snapshot.categoryId) ?? 0;
 
     if (snapshot.action === "BUY") {
-      const split = snapshot.actionAmount / categoryAssets.length;
+      const hasPositiveBase = currentCategoryValue > 0;
       categoryAssets.forEach((asset) => {
+        const weight = hasPositiveBase
+          ? getAssetMarketValue(asset) / currentCategoryValue
+          : 1 / categoryAssets.length;
         assetSuggestions.push({
           assetId: asset.id,
           assetName: asset.name,
           categoryId: snapshot.categoryId,
           action: "BUY",
-          amount: split,
+          amount: snapshot.actionAmount * weight,
         });
       });
       return;
