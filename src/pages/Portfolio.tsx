@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
+import { Auth } from "../components/Auth";
 import { AssetForm } from "../components/AssetForm";
 import { PortfolioTable } from "../components/PortfolioTable";
 import { PortfolioPieChart } from "../components/PortfolioPieChart";
@@ -7,14 +8,24 @@ import { usePortfolioStore } from "../stores/portfolioStore";
 import { useSettingsStore } from "../stores/settingsStore";
 import { useTemplateStore } from "../stores/templateStore";
 import { useWalletStore } from "../stores/walletStore";
+
 import type { Asset } from "../types";
 
 export function PortfolioPage() {
-  const { assets, addAsset, removeAsset, updateAsset, updateFetchedPrice } = usePortfolioStore();
+
+  const [user, setUser] = useState<any>(null);
+  const { assets, addAsset, removeAsset, updateAsset, updateFetchedPrice, setUser: setUserStore } = usePortfolioStore();
+  const { setUser: setTemplateUser, getActiveTemplate, getTemplateById } = useTemplateStore();
+  const { setUser: setWalletUser, getActiveWallet } = useWalletStore();
   const { currency } = useSettingsStore();
-  const { getActiveTemplate, getTemplateById } = useTemplateStore();
-  const { getActiveWallet } = useWalletStore();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  // Hydrate all stores on login
+  const handleUser = useCallback((u: any) => {
+    setUser(u);
+    setUserStore(u);
+    setTemplateUser(u);
+    setWalletUser(u);
+  }, [setUserStore, setTemplateUser, setWalletUser]);
 
   const activeWallet = getActiveWallet();
   const activeTemplate = (activeWallet?.templateId ? getTemplateById(activeWallet.templateId) : null) ?? getActiveTemplate();
@@ -82,10 +93,13 @@ export function PortfolioPage() {
     addAsset(payload);
   };
 
+
+  if (!user) {
+    return <Auth onUser={handleUser} />;
+  }
   if (!activeWallet) {
     return <p className="text-sm text-zinc-700">Create a wallet first.</p>;
   }
-
   if (!activeTemplate) {
     return <p className="text-sm text-zinc-700">Create a template before adding assets.</p>;
   }
