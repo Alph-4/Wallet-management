@@ -133,14 +133,14 @@ export function AssetForm({ categories, onSubmit }: AssetFormProps) {
           setManualPrice(0);
           setDividendYield(0);
           setCountry(COUNTRIES[0].code);
-              <div className="flex flex-col justify-end">
-                <p className="mb-1 text-xs font-medium text-zinc-600">Country</p>
-                <Select value={country} onChange={e => setCountry(e.target.value)}>
-                  {COUNTRIES.map((c) => (
-                    <option key={c.code} value={c.code}>{c.name}</option>
-                  ))}
-                </Select>
-              </div>
+          <div className="flex flex-col justify-end">
+            <p className="mb-1 text-xs font-medium text-zinc-600">Country</p>
+            <Select value={country} onChange={e => setCountry(e.target.value)}>
+              {COUNTRIES.map((c) => (
+                <option key={c.code} value={c.code}>{c.name}</option>
+              ))}
+            </Select>
+          </div>
         } catch (error) {
           const message = error instanceof Error ? error.message : "Unable to add asset";
           setSubmitError(message);
