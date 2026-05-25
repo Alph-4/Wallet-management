@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { AssetForm } from "../components/AssetForm";
 import { PortfolioTable } from "../components/PortfolioTable";
+import { PortfolioPieChart } from "../components/PortfolioPieChart";
 import { fetchYahooPrice } from "../lib/priceFetcher";
 import { usePortfolioStore } from "../stores/portfolioStore";
 import { useSettingsStore } from "../stores/settingsStore";
@@ -92,6 +93,7 @@ export function PortfolioPage() {
   return (
     <div className="space-y-5">
       <AssetForm categories={activeTemplate.categories} onSubmit={addAssetWithAutoPrice} />
+      <PortfolioPieChart categories={activeTemplate.categories} assets={assetsInActiveTemplate} />
       <PortfolioTable
         assets={assetsInActiveTemplate}
         categories={activeTemplate.categories}

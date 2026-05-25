@@ -35,6 +35,7 @@ export interface Asset {
   lastUpdatedAt?: string;
   createdAt: string;
   updatedAt: string;
+  dividendYield?: number; // annual yield in %
 }
 
 export interface PortfolioCategorySnapshot {

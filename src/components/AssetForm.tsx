@@ -16,6 +16,7 @@ export function AssetForm({ categories, onSubmit }: AssetFormProps) {
   const [ticker, setTicker] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [manualPrice, setManualPrice] = useState(0);
+  const [dividendYield, setDividendYield] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -26,8 +27,8 @@ export function AssetForm({ categories, onSubmit }: AssetFormProps) {
   }, [categories, categoryId]);
 
   const canSubmit = useMemo(() => {
-    return name.trim().length > 1 && categoryId.length > 0 && quantity > 0 && manualPrice >= 0;
-  }, [name, categoryId, quantity, manualPrice]);
+    return name.trim().length > 1 && categoryId.length > 0 && quantity > 0 && manualPrice >= 0 && dividendYield >= 0;
+  }, [name, categoryId, quantity, manualPrice, dividendYield]);
 
   const filteredSuggestions = useMemo<AssetSuggestion[]>(() => {
     const query = `${name} ${ticker}`.trim().toLowerCase();
@@ -50,7 +51,7 @@ export function AssetForm({ categories, onSubmit }: AssetFormProps) {
 
   return (
     <form
-      className="grid gap-3 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm md:grid-cols-6"
+      className="grid grid-cols-1 gap-3 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm md:grid-cols-6 md:gap-4"
       onSubmit={async (event) => {
         event.preventDefault();
         if (!canSubmit || isSubmitting) {
@@ -67,12 +68,14 @@ export function AssetForm({ categories, onSubmit }: AssetFormProps) {
             ticker: ticker.trim() || undefined,
             quantity,
             manualPrice,
+            dividendYield,
           });
 
           setName("");
           setTicker("");
           setQuantity(1);
           setManualPrice(0);
+          setDividendYield(0);
         } catch (error) {
           const message = error instanceof Error ? error.message : "Unable to add asset";
           setSubmitError(message);
@@ -81,7 +84,7 @@ export function AssetForm({ categories, onSubmit }: AssetFormProps) {
         }
       }}
     >
-      <div className="md:col-span-2">
+      <div className="md:col-span-2 flex flex-col justify-end">
         <Input
           value={name}
           onChange={(e) => {
@@ -105,14 +108,16 @@ export function AssetForm({ categories, onSubmit }: AssetFormProps) {
           ))}
         </datalist>
       </div>
-      <Select value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
-        {categories.map((category) => (
-          <option key={category.id} value={category.id}>
-            {category.name}
-          </option>
-        ))}
-      </Select>
-      <div>
+      <div className="flex flex-col justify-end">
+        <Select value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
+          {categories.map((category) => (
+            <option key={category.id} value={category.id}>
+              {category.name}
+            </option>
+          ))}
+        </Select>
+      </div>
+      <div className="flex flex-col justify-end">
         <Input
           value={ticker}
           onChange={(e) => setTicker(e.target.value.toUpperCase())}
@@ -129,22 +134,42 @@ export function AssetForm({ categories, onSubmit }: AssetFormProps) {
             ))}
         </datalist>
       </div>
-      <Input
-        type="number"
-        min={0}
-        step={0.0001}
-        value={quantity}
-        onChange={(e) => setQuantity(Number(e.target.value))}
-        placeholder="Quantity"
-      />
-      <Input
-        type="number"
-        min={0}
-        step={0.0001}
-        value={manualPrice}
-        onChange={(e) => setManualPrice(Number(e.target.value))}
-        placeholder="Manual price"
-      />
+      <div className="flex flex-col justify-end">
+        <p className="mb-1 text-xs font-medium text-zinc-600">Quantity owned</p>
+        <Input
+          type="number"
+          min={0}
+          step={0.0001}
+          value={quantity}
+          onChange={(e) => setQuantity(Number(e.target.value))}
+          placeholder="e.g. 2.5"
+          aria-label="Quantity owned"
+        />
+      </div>
+      <div className="flex flex-col justify-end">
+        <p className="mb-1 text-xs font-medium text-zinc-600">Unit price (manual)</p>
+        <Input
+          type="number"
+          min={0}
+          step={0.0001}
+          value={manualPrice}
+          onChange={(e) => setManualPrice(Number(e.target.value))}
+          placeholder="e.g. 185.40"
+          aria-label="Unit price manual"
+        />
+      </div>
+      <div className="flex flex-col justify-end">
+        <p className="mb-1 text-xs font-medium text-zinc-600">Dividend yield (%)</p>
+        <Input
+          type="number"
+          min={0}
+          step={0.01}
+          value={dividendYield}
+          onChange={(e) => setDividendYield(Number(e.target.value))}
+          placeholder="e.g. 2.5"
+          aria-label="Dividend yield"
+        />
+      </div>
       <div className="md:col-span-6">
         <div className="mb-2 flex flex-wrap gap-2">
           {filteredSuggestions.slice(0, 8).map((item) => (
