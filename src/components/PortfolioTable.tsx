@@ -40,6 +40,7 @@ export function PortfolioTable({
     quantity: number;
     manualPrice: number;
     dividendYield: number;
+    country: string;
   } | null>(null);
 
   // Global edit mode state
@@ -51,6 +52,7 @@ export function PortfolioTable({
     quantity: number;
     manualPrice: number;
     dividendYield: number;
+    country: string;
   }>>({});
 
   const cancelEdit = () => {
@@ -60,7 +62,7 @@ export function PortfolioTable({
 
   const saveEdit = (assetId: string) => {
     if (!draft) return;
-    if (!draft.name.trim() || draft.quantity <= 0 || draft.manualPrice < 0 || draft.dividendYield < 0) return;
+    if (!draft.name.trim() || draft.quantity <= 0 || draft.manualPrice < 0 || draft.dividendYield < 0 || !draft.country) return;
     onUpdateAsset(assetId, {
       name: draft.name.trim(),
       categoryId: draft.categoryId,
@@ -68,6 +70,7 @@ export function PortfolioTable({
       quantity: draft.quantity,
       manualPrice: draft.manualPrice,
       dividendYield: draft.dividendYield,
+      country: draft.country,
     });
     cancelEdit();
   };
@@ -96,6 +99,7 @@ export function PortfolioTable({
       quantity: asset.quantity,
       manualPrice: asset.manualPrice,
       dividendYield: asset.dividendYield ?? 0,
+      country: asset.country ?? "",
     });
   };
 
@@ -117,6 +121,7 @@ export function PortfolioTable({
                     quantity: a.quantity,
                     manualPrice: a.manualPrice,
                     dividendYield: a.dividendYield ?? 0,
+                    country: a.country ?? "",
                   };
                 });
                 setGlobalDrafts(drafts);
@@ -191,6 +196,7 @@ export function PortfolioTable({
             <TableHead>Name</TableHead>
             <TableHead>Category</TableHead>
             <TableHead>Ticker</TableHead>
+            <TableHead>Country</TableHead>
             <TableHead>Quantity</TableHead>
             <TableHead>Price</TableHead>
             <TableHead>Value</TableHead>
@@ -281,6 +287,27 @@ export function PortfolioTable({
                         />
                       ) : (
                         asset.ticker ?? "-"
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {isEditing || isGlobalEditing ? (
+                        <Input
+                          value={draftData.country}
+                          onChange={(event) => {
+                            const value = event.target.value;
+                            if (isGlobalEditing) {
+                              setGlobalDrafts((prev) => ({
+                                ...prev,
+                                [asset.id]: { ...prev[asset.id], country: value },
+                              }));
+                            } else {
+                              setDraft((prev) => (prev ? { ...prev, country: value } : prev));
+                            }
+                          }}
+                          placeholder="Country code (e.g. FR, US)"
+                        />
+                      ) : (
+                        asset.country ?? "-"
                       )}
                     </TableCell>
                     <TableCell>

@@ -3,6 +3,59 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Select } from "./ui/select";
 import type { Asset, Category } from "../types";
+
+const COUNTRIES = [
+  { code: "FR", name: "France" },
+  { code: "US", name: "United States" },
+  { code: "DE", name: "Germany" },
+  { code: "CN", name: "China" },
+  { code: "IN", name: "India" },
+  { code: "JP", name: "Japan" },
+  { code: "GB", name: "United Kingdom" },
+  { code: "CH", name: "Switzerland" },
+  { code: "CA", name: "Canada" },
+  { code: "IT", name: "Italy" },
+  { code: "ES", name: "Spain" },
+  { code: "NL", name: "Netherlands" },
+  { code: "SG", name: "Singapore" },
+  { code: "BR", name: "Brazil" },
+  { code: "AU", name: "Australia" },
+  { code: "KR", name: "South Korea" },
+  { code: "RU", name: "Russia" },
+  { code: "ZA", name: "South Africa" },
+  { code: "HK", name: "Hong Kong" },
+  { code: "IE", name: "Ireland" },
+  { code: "BE", name: "Belgium" },
+  { code: "LU", name: "Luxembourg" },
+  { code: "SE", name: "Sweden" },
+  { code: "DK", name: "Denmark" },
+  { code: "FI", name: "Finland" },
+  { code: "NO", name: "Norway" },
+  { code: "PL", name: "Poland" },
+  { code: "AT", name: "Austria" },
+  { code: "PT", name: "Portugal" },
+  { code: "GR", name: "Greece" },
+  { code: "TR", name: "Turkey" },
+  { code: "MX", name: "Mexico" },
+  { code: "AR", name: "Argentina" },
+  { code: "IL", name: "Israel" },
+  { code: "SA", name: "Saudi Arabia" },
+  { code: "AE", name: "UAE" },
+  { code: "TH", name: "Thailand" },
+  { code: "ID", name: "Indonesia" },
+  { code: "VN", name: "Vietnam" },
+  { code: "MY", name: "Malaysia" },
+  { code: "NZ", name: "New Zealand" },
+  { code: "CL", name: "Chile" },
+  { code: "CO", name: "Colombia" },
+  { code: "NG", name: "Nigeria" },
+  { code: "EG", name: "Egypt" },
+  { code: "KE", name: "Kenya" },
+  { code: "MA", name: "Morocco" },
+  { code: "TN", name: "Tunisia" },
+  { code: "DZ", name: "Algeria" },
+  { code: "Other", name: "Other" },
+];
 import { ASSET_SUGGESTIONS, type AssetSuggestion } from "../lib/assetSuggestions";
 
 interface AssetFormProps {
@@ -17,6 +70,7 @@ export function AssetForm({ categories, onSubmit }: AssetFormProps) {
   const [quantity, setQuantity] = useState(1);
   const [manualPrice, setManualPrice] = useState(0);
   const [dividendYield, setDividendYield] = useState(0);
+  const [country, setCountry] = useState(COUNTRIES[0].code);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -27,8 +81,8 @@ export function AssetForm({ categories, onSubmit }: AssetFormProps) {
   }, [categories, categoryId]);
 
   const canSubmit = useMemo(() => {
-    return name.trim().length > 1 && categoryId.length > 0 && quantity > 0 && manualPrice >= 0 && dividendYield >= 0;
-  }, [name, categoryId, quantity, manualPrice, dividendYield]);
+    return name.trim().length > 1 && categoryId.length > 0 && quantity > 0 && manualPrice >= 0 && dividendYield >= 0 && country.length > 0;
+  }, [name, categoryId, quantity, manualPrice, dividendYield, country]);
 
   const filteredSuggestions = useMemo<AssetSuggestion[]>(() => {
     const query = `${name} ${ticker}`.trim().toLowerCase();
@@ -62,6 +116,7 @@ export function AssetForm({ categories, onSubmit }: AssetFormProps) {
         setIsSubmitting(true);
 
         try {
+
           await onSubmit({
             name: name.trim(),
             categoryId,
@@ -69,6 +124,7 @@ export function AssetForm({ categories, onSubmit }: AssetFormProps) {
             quantity,
             manualPrice,
             dividendYield,
+            country,
           });
 
           setName("");
@@ -76,6 +132,15 @@ export function AssetForm({ categories, onSubmit }: AssetFormProps) {
           setQuantity(1);
           setManualPrice(0);
           setDividendYield(0);
+          setCountry(COUNTRIES[0].code);
+              <div className="flex flex-col justify-end">
+                <p className="mb-1 text-xs font-medium text-zinc-600">Country</p>
+                <Select value={country} onChange={e => setCountry(e.target.value)}>
+                  {COUNTRIES.map((c) => (
+                    <option key={c.code} value={c.code}>{c.name}</option>
+                  ))}
+                </Select>
+              </div>
         } catch (error) {
           const message = error instanceof Error ? error.message : "Unable to add asset";
           setSubmitError(message);

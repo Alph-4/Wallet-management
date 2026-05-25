@@ -36,6 +36,7 @@ export interface Asset {
   createdAt: string;
   updatedAt: string;
   dividendYield?: number; // annual yield in %
+  country: string; // pays de l'actif (code ISO ou nom)
 }
 
 export interface PortfolioCategorySnapshot {
