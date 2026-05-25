@@ -53,10 +53,10 @@ export const useWalletStore = create<WalletState>()(
             const updated = state.wallets.map((wallet) =>
               wallet.id === walletId
                 ? {
-                    ...wallet,
-                    ...patch,
-                    updatedAt: new Date().toISOString(),
-                  }
+                  ...wallet,
+                  ...patch,
+                  updatedAt: new Date().toISOString(),
+                }
                 : wallet,
             );
             if (currentUid) {
@@ -86,10 +86,10 @@ export const useWalletStore = create<WalletState>()(
             const updated = state.wallets.map((wallet) =>
               wallet.id === walletId
                 ? {
-                    ...wallet,
-                    templateId,
-                    updatedAt: new Date().toISOString(),
-                  }
+                  ...wallet,
+                  templateId,
+                  updatedAt: new Date().toISOString(),
+                }
                 : wallet,
             );
             if (currentUid) {
